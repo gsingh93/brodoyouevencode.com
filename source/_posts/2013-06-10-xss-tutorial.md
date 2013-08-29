@@ -3,6 +3,7 @@ layout: post
 title: XSS Tutorial
 date: 2013-06-10 08:25
 comments: true
+tags: ['xss', 'javascript', 'security', 'hacking']
 ---
 
 ### Introduction

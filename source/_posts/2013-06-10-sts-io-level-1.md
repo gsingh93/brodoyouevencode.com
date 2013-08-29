@@ -3,7 +3,7 @@ layout: post
 title: STS Level 1
 date: 2013-06-10 08:19
 comments: true
-categories: 
+tags: [sts, hacking, security]
 ---
 We start the level by SSHing into the STS IO server,
 
