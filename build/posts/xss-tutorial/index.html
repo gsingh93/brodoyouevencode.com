@@ -1,0 +1,311 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>XSS Tutorial - Bro, Do You Even Code?</title>
+  <meta name="author" content="Gulshan Singh">
+
+  
+  <meta name="description" content="Introduction An XSS attack allows an attacker to run client-side scripts on webpages viewed by other users. In this article, you&rsquo;ll learn about &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://brodoyouevencode.com/posts/xss-tutorial/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="/atom.xml" rel="alternate" title="Bro, Do You Even Code?" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=Raleway:100" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=Lora:400,400italic,700,700italic|Istok+Web:400,400italic,700,700italic" rel="stylesheet" type="text/css">
+
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-41625764-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body>
+  <div id="header-container">
+    <div id="header">
+      <div class="wrapper">
+        <header role="banner"><hgroup>
+  <h1><a href="/">Bro, Do You Even Code?</a></h1>
+</hgroup>
+
+</header>
+        <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:brodoyouevencode.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+      </div>
+    </div>
+  </div>
+  <div id="body"   >
+    <div id="main">
+      <div id="content">
+	<div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">XSS Tutorial</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-06-10T08:25:00-04:00" pubdate data-updated="true">Jun 10<span>th</span>, 2013</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><h3>Introduction</h3>
+
+<p>An XSS attack allows an attacker to run client-side scripts on webpages viewed by other users. In this article, you&rsquo;ll learn about the different types of XSS attacks, apply these attacks in your own demo page, and learn how to prevent them. I&rsquo;d recommend you set these test pages up on your own servers to understand them better. A quick Google search will get you started with that.</p>
+
+<!--more-->
+
+
+<h2>Basic XSS Example</h2>
+
+<p>Imagine I&rsquo;m adding search functionality to my site. My search page looks something like the following,</p>
+
+<pre><code>    &lt;html&gt;
+       &lt;body&gt;
+          &lt;form&gt;
+             &lt;input type="text" name="query"&gt;
+             &lt;input type="submit"&gt;
+          &lt;/form&gt;
+       &lt;/body&gt;
+    &lt;/html&gt;
+</code></pre>
+
+<p>Now when the user types in a search query and clicks submit, the form is posted to the page and a PHP script processes the query,</p>
+
+<pre><code>&lt;html&gt;
+  &lt;body&gt;
+    &lt;form&gt;
+      &lt;?php
+        if (array_key_exists('query', $_GET)) {
+          $query = $_GET['query'];
+          echo 'Displaying search results for query: ' . $query . '&lt;br&gt;';
+        }
+      ?&gt;
+      &lt;input type="text" name="query"&gt;
+      &lt;input type="submit"&gt;
+    &lt;/form&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+
+<p>Try this out on a test page and see what happens. When you search for something like &ldquo;Gulshan Singh&rdquo;, you get a webpage that says, &ldquo;Displaying search results for query: Gulshan Singh&rdquo;. Now enter the query &ldquo;<code>&lt;b&gt;Gulshan Singh&lt;/b&gt;</code>&rdquo; instead. You should still see the same text displayed on the page, but now the text &ldquo;Gulshan Singh&rdquo; should be in bold. What happened? Take a look at the HTML source of the resulting page. The exact text we enter into the search box gets written to the page, meaning that we can write our own HTML, and consequently our own JavaScript, to the page.</p>
+
+<p>So what malicious JavaScript could we execute on this page? One common XSS attack is cookie theft. Go back to the test page and search for <code>&lt;script&gt;document.cookie="username=gsingh";alert(document.cookie);&lt;/script&gt;</code>. If you&rsquo;re using a browser that doesn&rsquo;t protect against XSS attacks at the time of this writing (Firefox, IE, but not Chrome), then you should see an alert box popup with the text <code>"username=gsingh"</code>. By using XSS, you were able to access and display your cookies. In theory, the script could do much more. It could send the cookies in an email to any email account, or instead of messing with cookies, it could run a script that could DDOS attack any site you wanted it to. Note that Chrome prevents XSS attacks, so in order to get the test page to work with Chrome you need to put the following code at the top of the page,</p>
+
+<pre><code>&lt;?php
+    header('X-XSS-Protection: 0');
+?&gt;
+</code></pre>
+
+<p>This sends an HTTP Header to the server to disable XSS filtering. In real world scenarios we obviously can&rsquo;t do this, and we&rsquo;re left to look for other security holes.</p>
+
+<p>You may be wondering how any of this will help if you can only insert the malicious XSS vector into your own browser. Search something on our test page and look at the URL. Our query is in the page URL since we&rsquo;re using an HTTP GET request, and so we can send this URL to anyone and have the JavaScript execute on their page.</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Gulshan Singh</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-06-10T08:25:00-04:00" pubdate data-updated="true">Jun 10<span>th</span>, 2013</time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  <div class="g-plusone" data-size="medium"></div>
+  
+  
+    <div class="fb-like" data-send="true" data-width="450" data-show-faces="false"></div>
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/posts/wlan-security-primer-1/" title="Previous Post: WLAN Security Primer 1">&laquo; WLAN Security Primer 1</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>About Me</h1>
+  <p>A little something about me.</p>
+</section>
+<section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/posts/xss-tutorial/">XSS Tutorial</a>
+      </li>
+    
+      <li class="post">
+        <a href="/posts/wlan-security-primer-1/">WLAN Security Primer 1</a>
+      </li>
+    
+      <li class="post">
+        <a href="/posts/sts-io-level-1/">STS Level 1</a>
+      </li>
+    
+      <li class="post">
+        <a href="/posts/building-aosp-settings-app/">Building the AOSP Settings App</a>
+      </li>
+    
+  </ul>
+</section>
+<section>
+  <h1>Tag Cloud</h1>
+    <span id="tag-cloud"><a href='/categories/android' style='font-size: 130.0%'>android</a> <a href='/categories/aosp' style='font-size: 130.0%'>aosp</a> <a href='/categories/hacking' style='font-size: 160.0%'>hacking</a> <a href='/categories/javascript' style='font-size: 130.0%'>javascript</a> <a href='/categories/security' style='font-size: 160.0%'>security</a> <a href='/categories/sts' style='font-size: 130.0%'>sts</a> <a href='/categories/xss' style='font-size: 130.0%'>xss</a> </span>
+</section>
+
+
+  
+</aside>
+
+
+      </div>
+    </div>
+    <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Gulshan Singh -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a>. Design by <a href="http://octopressthemes.com">Octopress Themes</a>.</span>
+</p>
+
+</footer>
+    
+
+<script type="text/javascript">
+      var disqus_shortname = 'brodoyouevencode';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://brodoyouevencode.com/posts/xss-tutorial/';
+        var disqus_url = 'http://brodoyouevencode.com/posts/xss-tutorial/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id;
+  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+
+  <script type="text/javascript">
+    (function() {
+      var script = document.createElement('script'); script.type = 'text/javascript'; script.async = true;
+      script.src = 'https://apis.google.com/js/plusone.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(script, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+  </div>
+</body>
+</html>

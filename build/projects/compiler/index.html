@@ -1,0 +1,299 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Compiler - Bro, Do You Even Code?</title>
+  <meta name="author" content="Gulshan Singh">
+
+  
+  <meta name="description" content="Compiler Description This is another project I started back in high school. It&rsquo;s essentially a Python port (from Pascal) of the compiler &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://brodoyouevencode.com/projects/compiler/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="/atom.xml" rel="alternate" title="Bro, Do You Even Code?" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=Raleway:100" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=Lora:400,400italic,700,700italic|Istok+Web:400,400italic,700,700italic" rel="stylesheet" type="text/css">
+
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-41625764-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body>
+  <div id="header-container">
+    <div id="header">
+      <div class="wrapper">
+        <header role="banner"><hgroup>
+  <h1><a href="/">Bro, Do You Even Code?</a></h1>
+</hgroup>
+
+</header>
+        <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:brodoyouevencode.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+      </div>
+    </div>
+  </div>
+  <div id="body"   >
+    <div id="main">
+      <div id="content">
+	<div>
+<article role="article">
+  
+  <header>
+    <h1 class="entry-title">Compiler</h1>
+    
+  </header>
+  
+  <h3>Description</h3>
+
+<p>This is another project I started back in high school. It&rsquo;s essentially a Python port (from Pascal) of the compiler written by Jack Crenshaw in <a href="http://compilers.iecc.com/crenshaw/">this tutorial</a>. At the moment, the compiler understands basic programming constructs such as if statements and while loops. While I&rsquo;m fairly proud of this project, I&rsquo;m planning on writing a much better compiler in the future, and writing a tutorial for it as well.</p>
+
+<h3>How To Run</h3>
+
+<p>While I developed the project using PyDev, a plugin for eclipse, you can run the compiler with just Python installed. You also need to install <a href="http://www.nasm.us/">NASM</a>, which assembles the assembly output from the compiler. The linker is included in the download.</p>
+
+<p>Once you have everything installed, <a href="http://www.mediafire.com/download.php?q1a5mdcxh23d414">download the source</a> and extract it. In command prompt (the linking script is a batch file), type <code>python compiler.py</code>. The compiler should run and it will display all the assembly code that&rsquo;s being output as it runs. It will ask you if you want to compile the source from a source file or the code you type. If you compile from a source file, the contents of <code>code.txt</code> are compiled and run. You should see the number 7 output in the prompt. Take a look at <code>code.txt</code> to see what code was compiled. By default, the value of the variable <code>x</code> is printed when the program is finished. The code for a print function is implemented (it&rsquo;s what&rsquo;s used to display the value of x), but there was a reason I didn&rsquo;t add a print keyword that I can&rsquo;t remember. If you chose to compile the code you type, then type something like <code>a=1</code>. This will create a variable called <code>a</code> with the value of 1. Type something like <code>x=a+2</code> and <code>x</code> will get set to 3. Type <code>end</code> and the code will compile and run. You should see 3 output to the screen.</p>
+
+<p>Here&rsquo;s how the output should look for a simple example:</p>
+
+<pre><code>   C:\Users\Gulshan\Desktop\Compiler\Compiler&gt;python compiler.py
+   [list -]
+   %include 'win32n.inc'
+   [list +]
+
+   section .bss use32
+   section .data use32
+   section .code use32
+   cpu 386
+   extern WriteFile
+   extern GetStdHandle
+   extern ExitProcess
+   import WriteFile kernel32.dll
+   import GetStdHandle kernel32.dll
+   import ExitProcess kernel32.dll
+
+   section .code
+
+   ..start:
+   push    STD_OUTPUT_HANDLE
+   call    [GetStdHandle]                  ;Get stdout
+   mov      [stdout_handle], eax     ;Save the handle
+
+   Input from file? (y/n): n
+   &gt;&gt;x=2
+   mov             eax, 2
+   mov             [X], eax
+   &gt;&gt;end
+   add             dword [X], 48
+
+   ;Write a message to stdout
+   push    dword 0
+   push    dword 0
+   push    dword textlen
+   push    dword X
+   push    dword [stdout_handle]
+   call    [WriteFile]
+   jmp             exit
+
+   exit:
+   push    dword 0                                 ;Point at error code
+   call    [ExitProcess]
+   jmp             exit                                    ;Should never reach here
+
+
+   section .data
+
+   stdout_handle   dd      0
+   string                  dd      0
+   textlen                 equ     $ - string
+   X                       dd 0
+
+   C:\Users\Gulshan\Desktop\Compiler\Compiler&gt;
+   C:\Users\Gulshan\Desktop\Compiler\Compiler&gt;PATH=C:\Python27\;C:\Python27\Scripts
+   \;C:\OpenCV2.2\bin\;C:\Program Files\Java\jre6\bin;C:\Windows\system32;C:\Progra
+   m Files\Java\jdk1.6.0_25/bin;C:\Users\Gulshan\AppData\Local\nasm;C:\Program File
+   s (x86)\Tesseract-OCR;C:\Program Files (x86)\ImageConverter Plus;C:\Program File
+   s (x86)\ImageConverter Plus\Microsoft.VC80.CRT;C:\Program Files (x86)\ImageConve
+   rter Plus\Microsoft.VC80.MFC;C:\Program Files (x86)\Google\google_appengine\;c:\
+   altera\11.1\modelsim_ase\win32aloem;C:\Motion-Twin\Haxe\;C:\Motion-Twin\neko;C:\
+   cygwin\bin;
+
+   C:\Users\Gulshan\Desktop\Compiler\Compiler&gt;nasm -fobj output -l output.lst
+
+   C:\Users\Gulshan\Desktop\Compiler\Compiler&gt;alink\alink.exe -c -oPE -subsys conso
+   le output
+   ALINK v1.6 (C) Copyright 1998-9 Anthony A.J. Williams.
+   All Rights Reserved
+
+   Loading file output.obj
+   matched Externs
+   matched ComDefs
+   Generating PE file output.exe
+
+   C:\Users\Gulshan\Desktop\Compiler\Compiler&gt;output.exe
+   2
+</code></pre>
+
+  
+    <footer>
+      
+      
+        <div class="sharing">
+  
+  
+  <div class="g-plusone" data-size="medium"></div>
+  
+  
+    <div class="fb-like" data-send="true" data-width="450" data-show-faces="false"></div>
+  
+</div>
+
+      
+    </footer>
+  
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>About Me</h1>
+  <p>A little something about me.</p>
+</section>
+<section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/posts/xss-tutorial/">XSS Tutorial</a>
+      </li>
+    
+      <li class="post">
+        <a href="/posts/wlan-security-primer-1/">WLAN Security Primer 1</a>
+      </li>
+    
+      <li class="post">
+        <a href="/posts/sts-io-level-1/">STS Level 1</a>
+      </li>
+    
+      <li class="post">
+        <a href="/posts/building-aosp-settings-app/">Building the AOSP Settings App</a>
+      </li>
+    
+  </ul>
+</section>
+<section>
+  <h1>Tag Cloud</h1>
+    <span id="tag-cloud"><a href='/categories/android' style='font-size: 130.0%'>android</a> <a href='/categories/aosp' style='font-size: 130.0%'>aosp</a> <a href='/categories/hacking' style='font-size: 160.0%'>hacking</a> <a href='/categories/javascript' style='font-size: 130.0%'>javascript</a> <a href='/categories/security' style='font-size: 160.0%'>security</a> <a href='/categories/sts' style='font-size: 130.0%'>sts</a> <a href='/categories/xss' style='font-size: 130.0%'>xss</a> </span>
+</section>
+
+
+  
+</aside>
+
+
+      </div>
+    </div>
+    <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Gulshan Singh -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a>. Design by <a href="http://octopressthemes.com">Octopress Themes</a>.</span>
+</p>
+
+</footer>
+    
+
+<script type="text/javascript">
+      var disqus_shortname = 'brodoyouevencode';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://brodoyouevencode.com/projects/compiler/index.html';
+        var disqus_url = 'http://brodoyouevencode.com/projects/compiler/index.html';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id;
+  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+
+  <script type="text/javascript">
+    (function() {
+      var script = document.createElement('script'); script.type = 'text/javascript'; script.async = true;
+      script.src = 'https://apis.google.com/js/plusone.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(script, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+  </div>
+</body>
+</html>
