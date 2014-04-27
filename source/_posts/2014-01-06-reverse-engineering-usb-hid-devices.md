@@ -3,7 +3,7 @@ layout: post
 title: "Reverse Engineering USB HID Devices"
 date: 2014-01-06 21:05
 comments: true
-published: true
+published: false
 tags: ['reverse engineering', 'usb', 'c']
 ---
 
