@@ -1,4 +1,0 @@
-User-agent: *
-Disallow: 
-
-Sitemap: http://brodoyouevencode.com/sitemap.xml 
