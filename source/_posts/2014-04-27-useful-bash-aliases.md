@@ -15,7 +15,7 @@ Over the years I've accumulated a lot of useful aliases for my Bash shell. I rar
 
 Any content surrounded by angled brackets (`<>`) are machine/user specific, so don't forget to replace them with the correct values.
 
-```
+``` .bash_aliases
 # ls aliases
 alias ls='ls --color'
 alias ll='ls -lh --color'
