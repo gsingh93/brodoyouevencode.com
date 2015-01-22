@@ -11,6 +11,8 @@ I've noticed that when it comes to Git tutorials, there's only the "Intro to Git
 
 Note that this tutorial requires basic knowledge of Git. That is, you should know what Git is, how to add, commit, and push changes, and the very basics of branches and merging.
 
+<!-- more -->
+
 ## Git Number
 
 The first tip I'd recommend is to get [Git Number](https://github.com/holygeek/git-number). Git Number saves a ton of time when doing anything with Git. Instead of typing `git status`, try typing `git number`. You'll see the same output you'd normally see but with numbers in front. Now to perform any operation on a file, you just need to use it's corresponding number. So instead of typing `git add the/path/to/this/file/is/so/long.txt`, you'll just be able to type `git number add 1`. Note that this works on any git command that requires a file name, so it'll work with commands like `git rm` and `git checkout` too. Where git number really shines is it's ability to do operations on ranges. For example, you could run the command `git number add 1-3,5,8` to add the files 1, 2, 3, 5, and 8, but leave all other files unmodified.
