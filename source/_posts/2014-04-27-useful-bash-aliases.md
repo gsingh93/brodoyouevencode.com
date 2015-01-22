@@ -97,4 +97,54 @@ alias hd='hexdump -C'
 alias now='date +%T'
 ```
 
+Some commands can't be done with aliases. For those commands, we can use functions (I normally put these in a `.bash_functions` file and source it from my `.bashrc` just like I do for the `.bash_aliases` file):
+
+``` bash .bash_functions
+# edit the selected bash config file
+function editbash {
+    echo $1
+    if [[ "$1" == "a" ]]; then
+        emacs ~/.bash_aliases
+    elif [[ "$1" == "f" ]]; then
+        emacs ~/.bash_functions
+    else
+        emacs ~/.bashrc
+    fi
+    echo "done"
+}
+
+# print the last ten modified files in the specified directory
+function last {
+    ls -lt $1 | head
+}
+
+# copy a file to the clipboard from the command line
+function copyfile {
+    cat $1 | xclip -selection clipboard
+}
+
+# shortcut for recursively grepping
+function gr {
+    grep -r $1 .
+}
+
+# shortcut for compiling and running Java programs (I use this for competitions)
+function j {
+    filename="${1%.*}"
+    javac $filename.java
+    if [[ $? == 0 ]]; then
+       java $filename
+    fi
+}
+
+# shortcut for compiling and running C++ programs
+function g {
+    filename="${1%.*}"
+    g++ $filename.cpp -o $filename
+    if [[ $? == 0 ]]; then
+       ./$filename
+    fi
+}
+```
+
 Got any other good aliases to add? Let me know in the comments, and I'll add them to the list.
