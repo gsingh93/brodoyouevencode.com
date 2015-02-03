@@ -1,6 +1,6 @@
 $blockquote: $type-border !default;
 $sans: "Istok Web", "Helvetica Neue", Arial, sans-serif !default;
-$serif: "Lora", Georgia, Times, "Times New Roman", serif !default;
+$serif: "Noto Serif", "Lora", Georgia, Times, "Times New Roman", serif !default;
 $mono: Menlo, Monaco, "Andale Mono", "lucida console", "Courier New", monospace !default;
 $heading-font-family: "PT Serif", "Georgia", "Helvetica Neue", Arial, sans-serif !default;
 $header-title-font-family: $heading-font-family !default;
@@ -37,7 +37,7 @@ h1 {
 }
 
 @media only screen and (min-width: 992px) {
-  body { font-size: 1.15em; }
+  body { font-size: 1.2em; }
   h1 { font-size: 2.6em; line-height: 1.2em; }
 }
 
