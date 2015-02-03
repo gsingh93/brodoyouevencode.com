@@ -40,7 +40,7 @@ html .gist .gist-file {
    color: $base01;
    font-size: .7em !important;
    background: $base02 $noise-bg;
-   
+
    @extend .sans;
    line-height: 1.5em;
     a {
@@ -110,7 +110,7 @@ p, li {
 
   .c      { color: $comment !important; font-style: italic !important; }                     /* Comment */
   .cm     { color: $comment !important; font-style: italic !important; }                     /* Comment.Multiline */
-  .cp     { color: $comment !important; font-style: italic !important;  }                     /* Comment.Preproc */
+  .cp     { color: $preproc !important; font-weight: bold !important;  }                     /* Comment.Preproc */
   .c1     { color: $comment !important; font-style: italic !important; }                     /* Comment.Single */
   .cs     { color: $comment !important; font-weight: bold !important; font-style: italic !important; }   /* Comment.Special */
 
@@ -236,4 +236,3 @@ figure.code {
   text-shadow: #cbcccc 0 1px 0;
   padding-left: 3em;
 }
-
