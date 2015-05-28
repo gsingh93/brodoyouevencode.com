@@ -570,7 +570,7 @@ ExecStart=/path/to/my/display-manager
 Alias=display-manager.service
 ```
 
-Put the script in `/usr/lib/systemd/system/` and enable it with `sysctl enable my-display-manager.service`. Reboot, and hopefully you'll see your display manager. Try logging in and then quitting the window manager to make sure everything works fine.
+Put the script in `/usr/lib/systemd/system/` and enable it with `systemctl enable my-display-manager.service`. Reboot, and hopefully you'll see your display manager. Try logging in and then quitting the window manager to make sure everything works fine.
 
 Conclusion
 ----------
