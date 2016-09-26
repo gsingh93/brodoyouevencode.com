@@ -7,7 +7,7 @@ published: true
 tags: ['ctf-writeup', 'binary-exploitation']
 ---
 
-I've been going through the [how2heap](https://github.com/shellphish/how2heap) problems, and I recently solved search-engine from 9447 CTF in 2015. This was a pretty complicatedproblem, but it was a lot of fun so I'll be sharing the writeup of my solution below. I'd highly recommend going over [sploitfun's glibc malloc article](https://sploitfun.wordpress.com/2015/02/10/understanding-glibc-malloc/) and the [fastbin_dup_into_stack.c](https://github.com/shellphish/how2heap/blob/master/fastbin_dup_into_stack.c) example from how2heap before going through this writeup.
+I've been going through [how2heap](https://github.com/shellphish/how2heap) problems recently, and I really enjoyed solving search-engine from 9447 CTF in 2015. This was a pretty complicated problem, but it was also a lot of fun so I'll be sharing a writeup of my solution below. I'd highly recommend going over [sploitfun's glibc malloc article](https://sploitfun.wordpress.com/2015/02/10/understanding-glibc-malloc/) and the [fastbin_dup_into_stack.c](https://github.com/shellphish/how2heap/blob/master/fastbin_dup_into_stack.c) example from how2heap before going through this writeup.
 
 I'll be using a 64-bit Ubuntu 14.04 VM, specifically the one [here](https://github.com/gsingh93/ctf-vm). You can get the binary [here](https://github.com/ctfs/write-ups-2015/blob/master/9447-ctf-2015/exploitation/search-engine/search-bf61fbb8fa7212c814b2607a81a84adf)
 
@@ -34,7 +34,34 @@ $ checksec search-bf61fbb8fa7212c814b2607a81a84adf
 
 So we're working with a 64-bit, dynamically linked, stripped binary, which has NX and canaries enabled.
 
-The binary is a fairly simple program for indexing sentences and then searching for words in those sentences. After entering a sentence, the binary takes each word and adds it to a linked list of words. A node in this linked list looks like this:
+The binary is a program for indexing sentences and then searching for words in those sentences. Here's some example output:
+
+```
+$ ./search-bf61fbb8fa7212c814b2607a81a84adf
+1: Search with a word
+2: Index a sentence
+3: Quit
+2
+Enter the sentence size:
+3
+Enter the sentence:
+a b
+Added sentence
+1: Search with a word
+2: Index a sentence
+3: Quit
+1
+Enter the word size:
+1
+Enter the word:
+a
+Found 3: a b
+Delete this sentence (y/n)?
+y
+Deleted!
+```
+
+After entering a sentence, the binary takes each word and adds it to a linked list of words. A node in this linked list looks like this:
 
 ``` c
 struct Word {
@@ -48,7 +75,7 @@ struct Word {
 };
 ```
 
-Each word in the sentence has a `word_ptr` that points into the `sentence` pointer, which all words in a sentence share. The fact that `word_ptr`. When indexing a new sentence, the words are simply added to the front of the linked list, so it acts like a stack.
+Each word in the sentence has a `word_ptr` that points into the `sentence` pointer, which all words in a sentence share. When indexing a new sentence, the words are simply added to the front of the linked list, so it acts like a stack.
 
 Searching for a word involves iterating over this linked list of words, ensuring the sentence string isn't empty, and comparing the word to the target word. If we have a match, the sentence is printed and you have the option of deleting the sentence:
 
@@ -63,8 +90,8 @@ for ( i = words; i; i = i->next )
       fwrite(i->sentence, 1uLL, i->sentence_size, stdout);
       putchar('\n');
       puts("Delete this sentence (y/n)?");
-      read_(&v3, 2, 1);
-      if ( v3 == 'y' )
+      read_until_newline(&choice, 2, 1);
+      if ( choice == 'y' )
       {
         memset(i->sentence, 0, i->sentence_size);
         free(i->sentence);
@@ -87,7 +114,7 @@ int read_num()
   __int64 v3; // [sp+48h] [bp-10h]@1
 
   v3 = *MK_FP(__FS__, 40LL);
-  read_(nptr, 48, 1);
+  read_until_newline(nptr, 48, 1);
   result = strtol(nptr, &endptr, 0);
   if ( endptr == nptr )
   {
@@ -99,15 +126,17 @@ int read_num()
 }
 ```
 
-The function reads up to 48 characters into a 48 byte buffer before attempting to convert the string to a number. Note that it does not ensure the buffer ends with a null byte. This means if the string is printed and there is no null byte, we can leak the memory right after the string. Lucky for us, the string is printed in the next few lines when the input begins with something that can't be converted to a number. We will use this for a stack leak.
+The function reads up to 48 characters into a 48 byte buffer before attempting to convert the string to a number. `read_until_newline` is backed by the libc `read` function, and will read until either the number of characters specified is read or a newline is encountered. Note that it does not NULL-terminate the buffer. Since it does not NULL-terminate the string explicitly, any attempts to print the string will also print any data following the string until a NULL byte is run into. Lucky for us, the string is printed in the next few lines when the input begins with something that can't be converted to a number by `strtol`. We will use this for a stack leak later in the exploit.
 
-Now that we understand the binary, we can talk about how to exploit it. The general process is going to be 1) leak a stack address, 2) leak a libc address, 3) get a double free, and 4) use the double free to overwrite a return address to a call to `system(/bin/sh)`.
+Now that we understand the binary, we can talk about how to exploit it. The general approach will be to call `system('/bin/sh')`. However, we don't know the address of `system` because of ASLR. We will thus need a libc leak to calculate this address. In order to jump to this code, we will need to control a return address of a function. Our analysis of the code shows that a double free is likely, which means we may be able to write to "arbitrary" memory by making a chunk in the free list point to the memory we want to write to (we can't exactly write anywhere, as there a few checks we need to pass. Hence the quotes around "arbitrary"). We won't be able to write a GOT address without failing these checks, but we may be able to pass these checks if we overwrite a return address on the stack instead (the details of why are explained in the corresponding section). However, in order to overwrite a return address on the stack, we need a stack leak (again because of ASLR).
+
+Thus, our approach will 1) leak a stack address, 2) leak a libc address, 3) get a double free, and 4) use the double free to overwrite a return address to a call to `system(/bin/sh)`.
 
 ## Getting a stack leak
 
 The stack leak is the easiest part of the exploit, so we'll start with that.
 
-Here's a basic [pwntools](https://github.com/Gallopsled/pwntools) script to fill up the buffer and see it printed.
+Here's a basic [pwntools](https://github.com/Gallopsled/pwntools) script to fill up the buffer and see it printed. As mentioned in the previous section, `read_until_newline` is backed by `read` which does not terminate it's input with a NULL byte, so filling up the buffer will leak any memory after it until we hit a NULL byte.
 
 ``` python
 #!/usr/bin/env python2
@@ -291,7 +320,7 @@ def make_fake_chunk(addr):
     index_sentence(fake_chunk.ljust(56))
 ```
 
-The next question is what address we pass to it. We can't just make our fake chunk anywhere, because glibc checks to make sure the size of the chunk matches up with the fastbin it's in. In our case, our chunk is 64 bytes, which is 0x40, so our index is 2. We can thus only create a chunk in a location where this condition will be satisfied, meaning we need to allocate our chunk in a place where the size is between 0x40 and 0x4F inclusive (The index is calculated with `(size >> 4) - 2)`, which is why this works). My original idea was to start indexing a string, but when asked for the size of a string, put a long invalid string that ends with the qword 0x40. Then we allocate our chunk there (which is easy because we have a stack leak), and then we can overwrite the return address. This almost worked, but if you look in the `index` function you'll see there's a `puts` between `read_num` and `malloc`, which modifies the stack and removes the 0x40 we put on it.
+The next question is what address we pass to it. We can't just make our fake chunk anywhere, because glibc checks to make sure the size of the chunk matches up with the fastbin it's in. In our case, our chunk is 64 bytes, which is 0x40, so our index is 2. We can thus only create a chunk in a location where this condition will be satisfied, meaning we need to allocate our chunk in a place where the size is between 0x40 and 0x4F inclusive (The index is calculated with `(size >> 4) - 2)`, which is why this works). This is why we can't overwrite a GOT address, as mentioned in the first section. My original idea was to start indexing a string, but when asked for the size of a string, put a long invalid string that ends with the qword 0x40. Then we allocate our chunk there (which is easy because we have a stack leak), and then we can overwrite the return address. This almost worked, but if you look in the `index` function you'll see there's a `puts` between `read_num` and `malloc`, which modifies the stack and removes the 0x40 we put on it.
 
 At this point I decided to just dump the stack and see if there was already a 0x40 I could use on it. After running `telescope $rsp 20` in pwndbg, I saw a bunch of code segment addresses that started with the byte 0x40 very close to the return address of the function. We could thus use this as the size of our fake heap chunk. We use ROPGadget to find a `pop rdi; ret` gadget at 0x400e23, and we use that with the address of '/bin/sh' and `system` in the libc (calculated with the libc leak) to spawn a shell. The code for this is below, and you can find the full exploit at the bottom of this post.
 
@@ -395,6 +424,47 @@ define plist
     set $iter = $iter->next
   end
 end
+```
+
+The output after indexing the sentence 'a b' and 'c d' looks like:
+```
+pwndbg> plist 0x006030e0
+$1 = {
+  word_ptr = 0x603092 "d",
+  word_len = 1,
+  field_C = 0,
+  sentence = 0x603090 "c d",
+  sentence_size = 3,
+  field_1C = 0,
+  next = 0x6030b0
+}
+$2 = {
+  word_ptr = 0x603090 "c d",
+  word_len = 1,
+  field_C = 0,
+  sentence = 0x603090 "c d",
+  sentence_size = 3,
+  field_1C = 0,
+  next = 0x603060
+}
+$3 = {
+  word_ptr = 0x603012 "b",
+  word_len = 1,
+  field_C = 0,
+  sentence = 0x603010 "a b",
+  sentence_size = 3,
+  field_1C = 0,
+  next = 0x603030
+}
+$4 = {
+  word_ptr = 0x603010 "a b",
+  word_len = 1,
+  field_C = 0,
+  sentence = 0x603010 "a b",
+  sentence_size = 3,
+  field_1C = 0,
+  next = 0x0
+}
 ```
 
 Putting all this inside a `.gdbinit` in the local directory is a convenient way of loading all this automatically:
