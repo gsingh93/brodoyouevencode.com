@@ -4,7 +4,7 @@ title: "9447 CTF 2015: Search Engine Writeup"
 date: 2016-09-21 21:36:36 -0700
 comments: true
 published: true
-tags: ['ctf-writeup', 'binary-exploitation']
+tags: ['ctf', 'writeup', 'binary', 'exploitation', 'heap', 'fastbin']
 ---
 
 I've been going through [how2heap](https://github.com/shellphish/how2heap) problems recently, and I really enjoyed solving search-engine from 9447 CTF 2015. This was a pretty complicated problem, but it was also a lot of fun so I'll be sharing a writeup of my solution below. I'd highly recommend going over [sploitfun's glibc malloc article](https://sploitfun.wordpress.com/2015/02/10/understanding-glibc-malloc/) and the [fastbin_dup_into_stack.c](https://github.com/shellphish/how2heap/blob/master/fastbin_dup_into_stack.c) example from how2heap before going through this writeup.

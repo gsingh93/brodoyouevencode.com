@@ -4,13 +4,15 @@ title: "picoCTF 2017 weirderRSA Writeup"
 date: 2017-04-09 22:00:00 -0700
 comments: true
 published: true
-tags: [ctf', 'writeup', 'crypto', 'rsa']
+tags: ['ctf', 'writeup', 'crypto', 'rsa']
 ---
 picoCTF 2017 was happening over the last two weeks, and while I didn't have time to play it, a friend messaged me asking for help on one of the "master" level problems. The problem was a fun cryptography problem related to RSA, and I heard that some people ended up solving the problem using brute force, so I decided to writeup my solution which doesn't require brute force. Note that there's nothing wrong with the brute force solution, and you probably would have solved the problem faster, but it's good practice to be able to do it with just number theory.
 
+<!-- more -->
+
 Here was the problem description:
 ```
-Another message encrypted with RSA. It looks like some parameters are missing. Can you still decrypt it? Message
+Another message encrypted with RSA. It looks like some parameters are missing. Can you still decrypt it?
 ```
 
 A few hints were provided:
