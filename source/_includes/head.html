@@ -23,6 +23,14 @@
   <script src="{{ root_url }}/javascripts/modernizr-2.0.js"></script>
   <script src="{{ root_url }}/javascripts/ender.js"></script>
   <script src="{{ root_url }}/javascripts/octopress.js" type="text/javascript"></script>
+  {% if page.mathjax %}
+  <script type="text/x-mathjax-config">
+   MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$']]}});
+  </script>
+  <script type="text/javascript" async
+          src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML">
+  </script>
+  {% endif %}
   <link href="{{ site.subscribe_rss }}" rel="alternate" title="{{site.title}}" type="application/atom+xml">
   {% include custom/head.html %}
   {% include google_analytics.html %}
