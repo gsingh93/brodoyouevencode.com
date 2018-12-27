@@ -157,8 +157,6 @@ void clear()
 }
 ```
 
-One final thing to note is that the binary registered an alarm signal handler which prints out "wuhahaha" along with some periods for a few seconds before calling `exit(1)`. While many CTF problems use `alarm` to limit the amount of time you can interact with the binary, it's rare to see a signal handler for it. My solution does not use this at all, but I am curious if there are other solutions that do use it.
-
 Now let's get into the bugs.
 
 ## Bug 1: Heap overflow in `base64_encode()`
